@@ -9,7 +9,7 @@ import gc
 # warnings.simplefilter('error', Image.DecompressionBombWarning)
 
 WEBP_COMPRESSION_QUALITY = 85
-
+PNG_COMPRESSION_QUALITY = 4
 sizes = {
     "96w": (96, 96),
     "240w": (240, 240),
@@ -29,7 +29,7 @@ def upload_to_s3(file_obj, original_path, filename, bucket_name, type="extracted
 
     s3_client = boto3.client("s3")
     s3_client.upload_fileobj(
-        file_obj, bucket_name, key, ExtraArgs={"ContentType": "image/webp"}
+        file_obj, bucket_name, key, ExtraArgs={"ContentType": "image/png"}
     )
     return f"https://{bucket_name}.s3.amazonaws.com/{key}"
 
@@ -38,6 +38,13 @@ def compress_and_save_as_webp(img):
     img.save(webp_image, format="WEBP", quality=WEBP_COMPRESSION_QUALITY)
     webp_image.seek(0)
     return webp_image
+
+def compress_and_save_as_png(img):
+    png_image = BytesIO()
+    img.save(png_image, format="PNG", quality=PNG_COMPRESSION_QUALITY)
+    png_image.seek(0)
+    return png_image
+
 
 def download_image_from_s3(s3_url):
     # try:
