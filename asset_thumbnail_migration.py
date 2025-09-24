@@ -8,7 +8,7 @@ from elasticsearch import Elasticsearch, exceptions
 from langchain_core.runnables import RunnableLambda, RunnableParallel
 from utils import download_image_from_s3, compress_and_save_as_webp, compress_and_save_as_png, upload_to_s3, generate_blurhash, sizes, IMAGE_TYPE
 from sqlalchemy.orm import sessionmaker
-from db import Base, Assets
+from db import Base, Assets, Domain
 import logging
 import csv
 import gc
@@ -32,10 +32,10 @@ logging.basicConfig(
 
 def get_db_session():
     SQLALCHEMY_DATABASE_URL_READER = (
-        "postgresql://fds_dev:4duyNK2Npr9AYrnc2t!qj24Bb@fds-dev-cluster.cluster-ro-cyqstyz3e64b.us-east-1.rds.amazonaws.com:5432/fds_dev"
+        os.getenv("SQLALCHEMY_DATABASE_URL_READER")
     )
     SQLALCHEMY_DATABASE_URL_WRITER = (
-        "postgresql://fds_dev:4duyNK2Npr9AYrnc2t!qj24Bb@fds-dev-cluster.cluster-cyqstyz3e64b.us-east-1.rds.amazonaws.com:5432/fds_dev"
+        os.getenv("SQLALCHEMY_DATABASE_URL_WRITER")
     )
 
     engine_writer = create_engine(
@@ -211,13 +211,14 @@ if __name__ == "__main__":
     db_session = get_db_session()
 
     print("Querying Domains")
-    # domains = db_session.query(Domain).all()
+    domains = db_session.query(Domain).all()
     # db_session.close()
-    domains = ["7e9ec0fc-8b9f-4e96-a246-17751572c5ef"]
-    #for domain in tqdm(domains):
-        #if domain=="36433986-be88-4707-901d-a27e4dec6de2":
-            #continue
-    process_domain(domains[0])
+    # domains = ["7e9ec0fc-8b9f-4e96-a246-17751572c5ef"]
+    for domain in tqdm(domains):
+        if domain=="7e9ec0fc-8b9f-4e96-a246-17751572c5ef" or domain=="8ce2a320-bba6-4d5f-9543-a7b2b28736ee":
+            continue
+        print(f"Processing Domain: {domain.id}")
+        process_domain(domain)
 
     print("Migration Completed.")
 
