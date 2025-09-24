@@ -12,12 +12,18 @@ from db import Base, Content, Proposal
 import logging
 import csv
 import gc
+import os
+from dotenv import load_dotenv
 
-ES_HOSTNAME="https://localhost"
-ES_PORT="9200"
-ES_USERNAME="fds_user"
-ES_PASSWORD="QGzHpFm&Cosr#Y39j5ye"
-APP_STAGE="dev"
+load_dotenv()
+
+ES_HOSTNAME= os.getenv("ES_HOSTNAME")
+ES_PORT= os.getenv("ES_PORT")
+ES_USERNAME= os.getenv("ES_USERNAME")
+ES_PASSWORD= os.getenv("ES_PASSWORD")
+APP_STAGE= os.getenv("APP_STAGE")
+
+print(ES_HOSTNAME, ES_PORT, ES_USERNAME, ES_PASSWORD, APP_STAGE)
 
 Image.MAX_IMAGE_PIXELS = 100000000
 
@@ -93,7 +99,7 @@ def add_to_es(thumbnail_data, domain_id, batch_start):
 
 def process_row(row_data):
     try: 
-        #if(row_data.get('thumbnail_info') and row_data.get('thumbnail_info').get('thumbnail_location') and not row_data.get('thumbnail_info').get('thumbnail_location').get('png')):
+        if(row_data.get('thumbnail_info') and row_data.get('thumbnail_info').get('thumbnail_location') and not row_data.get('thumbnail_info').get('thumbnail_location').get('png')):
             thumbnail_info = row_data.get('thumbnail_info') or {}
             s3_url = row_data['metadata_']['image_url'].replace("%2F", "/")
             try:
@@ -109,25 +115,10 @@ def process_row(row_data):
             results = {}
             results["raw"] = s3_url
 
-            # Save original compressed
-            # compressed_webp_image = compress_and_save_as_webp(img)
-            # results["compressed"] = upload_to_s3(
-            #     compressed_webp_image,
-            #     base_path,
-            #     f"{filename}_compressed.webp",
-            #     bucket,
-            #     IMAGE_TYPE,
-            # )
-
-            # Generate thumbnails only if the image has a high enough resolution
-            # for size_name, (target_width, target_height) in sizes.items():
+            
             if max_width >= 240 and max_height >= 240:
                 img_resized = img.copy()
                 img_resized.thumbnail((240, 240), Image.LANCZOS)
-                # webp_image = compress_and_save_as_webp(img_resized)
-                # results[size_name] = upload_to_s3(
-                #     webp_image, base_path, f"{filename}_{size_name}.webp", bucket, IMAGE_TYPE
-                # )
 
 
                 png_image = compress_and_save_as_png(img_resized)
@@ -143,18 +134,8 @@ def process_row(row_data):
                 del png_image
                 gc.collect()
 
-            # Generate BlurHash
-            blurhash_str = generate_blurhash(img)
-
-            # thumbnail_info = {
-            #     "resolution": original_resolution,
-            #     "thumbnail_location": results,
-            #     "blurhash": blurhash_str,
-            # }
             
-
             del img
-            #del compressed_webp_image
             del results
             gc.collect()
             return thumbnail_info
@@ -222,11 +203,6 @@ def process_domain(domain):
                         "thumbnail_info": thumbnail_info
                     })
             if len(thumbnail_data) > 0: 
-                # db_session.execute(
-                #     update(Content),
-                #     thumbnail_data
-                # )
-                #db_session.commit() 
                 add_to_es(thumbnail_data, domain_id, batch_start)
             del thumbnail_data  
             del result

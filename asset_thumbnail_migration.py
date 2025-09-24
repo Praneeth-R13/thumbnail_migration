@@ -12,12 +12,15 @@ from db import Base, Assets
 import logging
 import csv
 import gc
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-ES_HOSTNAME="https://localhost"
-ES_PORT="9200" 
-ES_USERNAME="fds_user"
-ES_PASSWORD="QGzHpFm&Cosr#Y39j5ye"
-APP_STAGE="dev"
+ES_HOSTNAME= os.getenv("ES_HOSTNAME")
+ES_PORT= os.getenv("ES_PORT")
+ES_USERNAME= os.getenv("ES_USERNAME")
+ES_PASSWORD= os.getenv("ES_PASSWORD")
+APP_STAGE= os.getenv("APP_STAGE")
 
 Image.MAX_IMAGE_PIXELS = 100000000
 
@@ -94,7 +97,7 @@ def add_to_es(thumbnail_data, domain_id, batch_start):
 def process_row(row_data):
     try: 
         # Store thumbnail_info in a separate variable
-        #if(row_data.get('thumbnail_info') and row_data.get('thumbnail_info').get('thumbnail_location') and not row_data.get('thumbnail_info').get('thumbnail_location').get('png')):
+        if(row_data.get('thumbnail_info') and row_data.get('thumbnail_info').get('thumbnail_location') and not row_data.get('thumbnail_info').get('thumbnail_location').get('png')):
             thumbnail_info = row_data.get('thumbnail_info') or {}
             s3_url = row_data['metadata_']['original_image_url'].replace("%2F", "/")
             try:
@@ -124,8 +127,6 @@ def process_row(row_data):
                 del img_resized
                 del png_image
                 gc.collect()
-
-            blurhash_str = generate_blurhash(img)
 
             del img
             del results
