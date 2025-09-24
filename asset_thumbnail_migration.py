@@ -8,13 +8,13 @@ from elasticsearch import Elasticsearch, exceptions
 from langchain_core.runnables import RunnableLambda, RunnableParallel
 from utils import download_image_from_s3, compress_and_save_as_webp, compress_and_save_as_png, upload_to_s3, generate_blurhash, sizes, IMAGE_TYPE
 from sqlalchemy.orm import sessionmaker
-from db import Base, Content, Proposal
+from db import Base, Assets
 import logging
 import csv
 import gc
 
 ES_HOSTNAME="https://localhost"
-ES_PORT="9200"
+ES_PORT="9200" 
 ES_USERNAME="fds_user"
 ES_PASSWORD="QGzHpFm&Cosr#Y39j5ye"
 APP_STAGE="dev"
@@ -93,9 +93,10 @@ def add_to_es(thumbnail_data, domain_id, batch_start):
 
 def process_row(row_data):
     try: 
+        # Store thumbnail_info in a separate variable
         #if(row_data.get('thumbnail_info') and row_data.get('thumbnail_info').get('thumbnail_location') and not row_data.get('thumbnail_info').get('thumbnail_location').get('png')):
             thumbnail_info = row_data.get('thumbnail_info') or {}
-            s3_url = row_data['metadata_']['image_url'].replace("%2F", "/")
+            s3_url = row_data['metadata_']['original_image_url'].replace("%2F", "/")
             try:
                 img, bucket, base_path, filename = download_image_from_s3(s3_url)
             except Image.DecompressionBombError as e:
@@ -109,33 +110,14 @@ def process_row(row_data):
             results = {}
             results["raw"] = s3_url
 
-            # Save original compressed
-            # compressed_webp_image = compress_and_save_as_webp(img)
-            # results["compressed"] = upload_to_s3(
-            #     compressed_webp_image,
-            #     base_path,
-            #     f"{filename}_compressed.webp",
-            #     bucket,
-            #     IMAGE_TYPE,
-            # )
-
-            # Generate thumbnails only if the image has a high enough resolution
-            # for size_name, (target_width, target_height) in sizes.items():
             if max_width >= 240 and max_height >= 240:
                 img_resized = img.copy()
                 img_resized.thumbnail((240, 240), Image.LANCZOS)
-                # webp_image = compress_and_save_as_webp(img_resized)
-                # results[size_name] = upload_to_s3(
-                #     webp_image, base_path, f"{filename}_{size_name}.webp", bucket, IMAGE_TYPE
-                # )
-
-
                 png_image = compress_and_save_as_png(img_resized)
                 results["png"] = upload_to_s3(
                     png_image, base_path, f"{filename}_png.png", bucket, IMAGE_TYPE
                 )
                 
-                # Update thumbnail_info with the png key inside thumbnail_location
                 if "thumbnail_location" not in thumbnail_info:
                     thumbnail_info["thumbnail_location"] = {}
                 thumbnail_info["thumbnail_location"]["png"] = results["png"]
@@ -143,22 +125,12 @@ def process_row(row_data):
                 del png_image
                 gc.collect()
 
-            # Generate BlurHash
             blurhash_str = generate_blurhash(img)
 
-            # thumbnail_info = {
-            #     "resolution": original_resolution,
-            #     "thumbnail_location": results,
-            #     "blurhash": blurhash_str,
-            # }
-            
-
             del img
-            #del compressed_webp_image
             del results
             gc.collect()
             return thumbnail_info
-        
     except Exception as e:
         with open('error.csv', 'a', newline='') as file:
             writer = csv.writer(file)
@@ -171,17 +143,14 @@ def create_task(record):
 
 def process_domain(domain):
     domain_id = str(domain)
-    #domain_id = domain
     print(f"Processing Domain: {domain_id}")
     db_session = get_db_session()
     query = (
-        db_session.query(Content.id, Content.domain_id, Content.metadata_, Content.thumbnail_info)
-        .join(Proposal, Content.proposal_id == Proposal.id)
+        db_session.query(Assets.id, Assets.created_for_domain, Assets.metadata_, Assets.thumbnail_info)
         .filter(
-            Proposal.is_deleted == False,
-            Content.domain_id == domain_id,
-            Content.status != 'DELETED',
-            Content.content_type.contains('image'),
+            Assets.created_for_domain == domain_id,
+            Assets.status == 'completed',
+            Assets.asset_type.contains('image'),
 
         )
         .execution_options(stream_results=True)
@@ -200,7 +169,7 @@ def process_domain(domain):
                 {
                     f"{record.id}": create_task({
                         'id': record.id,
-                        'domain_id': record.domain_id,
+                        'domain_id': record.created_for_domain,
                         'metadata_': record.metadata_,
                         'thumbnail_info': record.thumbnail_info
                     })
@@ -212,7 +181,7 @@ def process_domain(domain):
             for id, thumbnail_info in result.items():
                 if thumbnail_info:
                     # Find the record and update it directly
-                    record = db_session.query(Content).filter(Content.id == id).first()
+                    record = db_session.query(Assets).filter(Assets.id == id).first()
                     if record:
                         record.thumbnail_info = thumbnail_info
                         flag_modified(record, 'thumbnail_info')
@@ -222,11 +191,6 @@ def process_domain(domain):
                         "thumbnail_info": thumbnail_info
                     })
             if len(thumbnail_data) > 0: 
-                # db_session.execute(
-                #     update(Content),
-                #     thumbnail_data
-                # )
-                #db_session.commit() 
                 add_to_es(thumbnail_data, domain_id, batch_start)
             del thumbnail_data  
             del result
