@@ -32,10 +32,10 @@ logging.basicConfig(
 
 def get_db_session():
     SQLALCHEMY_DATABASE_URL_READER = (
-        "postgresql://fds_dev:4duyNK2Npr9AYrnc2t!qj24Bb@localhost:5434/fds_dev"
+        "postgresql://fds_dev:4duyNK2Npr9AYrnc2t!qj24Bb@fds-dev-cluster.cluster-ro-cyqstyz3e64b.us-east-1.rds.amazonaws.com:5432/fds_dev"
     )
     SQLALCHEMY_DATABASE_URL_WRITER = (
-        "postgresql://fds_dev:4duyNK2Npr9AYrnc2t!qj24Bb@localhost:5432/fds_dev"
+        "postgresql://fds_dev:4duyNK2Npr9AYrnc2t!qj24Bb@fds-dev-cluster.cluster-cyqstyz3e64b.us-east-1.rds.amazonaws.com:5432/fds_dev"
     )
 
     engine_writer = create_engine(
@@ -135,7 +135,7 @@ def process_row(row_data):
     except Exception as e:
         with open('error.csv', 'a', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow([row.id, e, "Failed to create thumbnail"])
+            writer.writerow([row_data.get('id'), e, "Failed to create thumbnail"])
         return None
 
 def create_task(record):
@@ -213,7 +213,7 @@ if __name__ == "__main__":
     print("Querying Domains")
     # domains = db_session.query(Domain).all()
     # db_session.close()
-    domains = ["8ce2a320-bba6-4d5f-9543-a7b2b28736ee"]
+    domains = ["7e9ec0fc-8b9f-4e96-a246-17751572c5ef"]
     #for domain in tqdm(domains):
         #if domain=="36433986-be88-4707-901d-a27e4dec6de2":
             #continue
