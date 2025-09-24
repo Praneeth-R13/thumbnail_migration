@@ -218,7 +218,7 @@ if __name__ == "__main__":
         if domain=="7e9ec0fc-8b9f-4e96-a246-17751572c5ef" or domain=="8ce2a320-bba6-4d5f-9543-a7b2b28736ee":
             continue
         print(f"Processing Domain: {domain.id}")
-        process_domain(domain)
+        process_domain(domain.id)
 
     print("Migration Completed.")
 
