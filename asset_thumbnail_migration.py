@@ -212,7 +212,7 @@ if __name__ == "__main__":
 
     print("Querying Domains")
     domains = db_session.query(Domain).all()
-    # db_session.close()
+    db_session.close()
     # domains = ["7e9ec0fc-8b9f-4e96-a246-17751572c5ef"]
     for domain in tqdm(domains):
         if domain=="7e9ec0fc-8b9f-4e96-a246-17751572c5ef" or domain=="8ce2a320-bba6-4d5f-9543-a7b2b28736ee":
