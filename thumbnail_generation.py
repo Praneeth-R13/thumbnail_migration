@@ -71,21 +71,6 @@ def add_to_es(thumbnail_data, domain_id, batch_start):
     )
     actions = []
     for data in thumbnail_data:
-        # If thumbnail_info is None, index the record instead of update
-        if data.get("thumbnail_info") is None:
-            print("Indexing record", data["id"])
-            action = {
-                "index": {
-                    "_index": f"{domain_id}_prod_image",
-                    "_id": data["id"]
-                }
-            }
-            doc = {
-                "thumbnail_info": data["thumbnail_info"]
-            }
-            actions.append(action)
-            actions.append(doc)
-        else:
             action = {
                 "update":{
                     "_index": f"{domain_id}_prod_image",
