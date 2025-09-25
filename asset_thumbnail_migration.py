@@ -68,21 +68,35 @@ def add_to_es(thumbnail_data, domain_id, batch_start):
     )
     actions = []
     for data in thumbnail_data:
-        action = {
-            "update":{
-                "_index": f"{domain_id}_prod_image",
-                "_id": data["id"]
+        # If thumbnail_info is None, index the record instead of update
+        if data.get("thumbnail_info") is None:
+            print("Indexing record", data["id"])
+            action = {
+                "index": {
+                    "_index": f"{domain_id}_prod_image",
+                    "_id": data["id"]
+                }
             }
-        }
-
-        doc = {
-            "doc": {
+            doc = {
                 "thumbnail_info": data["thumbnail_info"]
-            },
-            "doc_as_upsert": True #note
-        }
-        actions.append(action)
-        actions.append(doc)
+            }
+            actions.append(action)
+            actions.append(doc)
+        else:
+            action = {
+                "update":{
+                    "_index": f"{domain_id}_prod_image",
+                    "_id": data["id"]
+                }
+            }
+            doc = {
+                "doc": {
+                    "thumbnail_info": data["thumbnail_info"]
+                },
+                "doc_as_upsert": True #note
+            }
+            actions.append(action)
+            actions.append(doc)
     try:
         response = es.bulk(body=actions, refresh=True)
         # print(f"Batch upsert completed: {response}")
