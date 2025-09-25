@@ -70,7 +70,7 @@ def add_to_es(thumbnail_data, domain_id, batch_start):
     for data in thumbnail_data:
         action = {
             "update":{
-                "_index": f"{domain_id}_dev_image",
+                "_index": f"{domain_id}_prod_image",
                 "_id": data["id"]
             }
         }
@@ -133,7 +133,7 @@ def process_row(row_data):
             gc.collect()
             return thumbnail_info
     except Exception as e:
-        with open('error.csv', 'a', newline='') as file:
+        with open('prod_asset_error.csv', 'a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow([row_data.get('id'), e, "Failed to create thumbnail"])
         return None
@@ -213,12 +213,12 @@ if __name__ == "__main__":
     print("Querying Domains")
     domains = db_session.query(Domain).all()
     db_session.close()
-    # domains = ["7e9ec0fc-8b9f-4e96-a246-17751572c5ef"]
-    for domain in tqdm(domains):
-        if domain=="7e9ec0fc-8b9f-4e96-a246-17751572c5ef" or domain=="8ce2a320-bba6-4d5f-9543-a7b2b28736ee":
-            continue
-        print(f"Processing Domain: {domain.id}")
-        process_domain(domain.id)
+    domains = ["05ed5f5b-8777-49b7-97cd-7a057488f749"]
+    #for domain in tqdm(domains):
+        #if domain=="7e9ec0fc-8b9f-4e96-a246-17751572c5ef" or domain=="8ce2a320-bba6-4d5f-9543-a7b2b28736ee":
+            #continue
+        #print(f"Processing Domain: {domain.id}")
+    process_domain(domains[0])
 
     print("Migration Completed.")
 
