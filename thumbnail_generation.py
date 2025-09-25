@@ -226,50 +226,14 @@ if __name__ == "__main__":
     #db_session.close()
     #domains = ["05ed5f5b-8777-49b7-97cd-7a057488f749"]
     domains = [
-  "285248ed-c186-4d5a-907f-e4534fbfe15d",
-  "2ad8560e-29b9-47ac-922d-6075feda923a",
-  "e6304aac-7ff8-4e15-a751-d94e095c97b6",
-  "56ad5b18-4a1c-464d-8830-878d1daf5121",
-  "f3e58caa-f29c-41f2-8ade-0b74587bf152",
-  "d1ed1222-6677-4233-8786-33349d4529ca",
-  "58a95c65-1941-420b-b32b-2fcc2652a84b",
-  "1d38dc97-0d6a-4409-8d99-0ebb941ebbc7",
-  "f6303c74-1afe-40c5-bdd5-23a96e998286",
-  "718454e7-01be-485c-bad2-ab68715bbee9",
-  "a5c6a017-9df2-42c2-9ca1-1a63b136ad56",
-  "46e5d66a-833e-499f-914d-05ac6be9918f",
-  "98e2acc9-b514-45cf-9e8f-6180e6e8338a",
-  "49641675-ffb6-452f-8f77-b4e7517ffa24",
-  "f20e0063-4f32-422e-afb8-167dfec41217",
-  "4dc373e2-9494-4c83-806c-fbe17835f7cf",
-  "d4aecbe2-d5c3-4b44-a309-c0ecd434b58c",
-  "2473de36-a5aa-4cf6-83ab-9b6b88f573b7",
-  "f01ef784-be74-45ac-8068-26d803bd3302",
-  "d4a891bf-a977-452e-8bc2-cd68a1ffa520",
-  "3261ef93-191b-4691-94a4-badc0c07f038",
-  "ab358a1c-6731-4872-b3ee-a91a7213ac0a",
-  "7b4109ab-6e52-4de6-8486-7b315c5a61e1",
-  "8086008a-0e51-4854-8cb5-994944b26ddc",
-  "36433986-be88-4707-901d-a27e4dec6de2",
-  "1bce102e-7095-4d96-ae09-433715e8c007",
-  "a9386eb2-85c3-43db-b09d-e1e6e569f909",
-  "8ba6faed-d6c5-4ca2-99a5-105f411522d5",
-  "2af213d0-ef86-45ca-a251-cf0bf95b6bd0",
-  "486adf24-be96-4047-b9b5-db6e25e6fd2d",
-  "1e40aed8-77cd-45a8-a79b-160a4f48a7bb",
-  "7eaaadd2-e81e-4934-a378-70b94fdb5136",
-  "363a69d8-a30b-4dcf-995f-fadbab9d8b2d",
-  "c5b6186b-efc4-4014-91dd-e737072aa1f2",
-  "bb8834e1-8385-4146-8808-0d2651038a52",
-  "9733d3f3-20d2-4deb-bd83-2176011c4d57",
-  "b36edc1a-a701-48e8-8d0c-cf9248fe2f28",
-  "6fa169f9-0cd0-4cae-a105-2151de93d1e1"
-    ];
+            '6fa169f9-0cd0-4cae-a105-2151de93d1e1',
+  'b36edc1a-a701-48e8-8d0c-cf9248fe2f28'
+    ]    
     for domain in domains:
         if domain=="7e9ec0fc-8b9f-4e96-a246-17751572c5ef" or domain=="8ce2a320-bba6-4d5f-9543-a7b2b28736ee":
             continue
         print(f"Processing Domain: {domain}")
-        #process_domain(domains)
+        process_domain(domain)
 
     print("Migration Completed.")
 
